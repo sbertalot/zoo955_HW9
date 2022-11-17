@@ -28,23 +28,52 @@ coef(model)
 
 #Q3 Create a function that returns the negative log likelihood of the 
 #model parameters (r, K) given the data (Nt)
-#making changes in order to push again
-return_parameters <- function(time, y_pred, sd){
-  -sum(dnorm(x=time, mean = y_pred, sd = sd, log=TRUE))
+return_parameters <- function(x, y_pred){
+  -sum(dnorm(x=x, mean = y_pred, log=TRUE))
+}
+
+obj_func <- function(par){
+  r <- par[1]
+  N <- par[2]
+  K <- par[3]
+  y_pred <-  N + (r*N)*((1-N)/K)
+  nll <- return_parameters(N, y_pred)
 }
 
 
 # Estimate parameters using optim()
-optfit <- optim(par=c(0,1,2), fn=obj_func)
+optfit <- optim(par=c(16.481497, 5.038222, 100.463116), fn=obj_func)
 optcoefs <- optfit$par
 
-calc_nll <- function(r, K, sd) {
-  N1 = array(dim=c(1,length(time))); N1[1]=0.05*K
-  for (i in time [2:length(time)]) {
-    n = N1[i-1]
-    y_pred = n+(r*n)*(1-n/K)
-  }
-  nll <- return_parameters(data$x, y_pred, sd = sd)
+#################### QUESTION 4
+set.seed(42)
+r.q4 <- 0.2
+K.q4 <- 100
+time.q4 = seq(from=1, to=50)
+N.q4 = array(dim=c(1,length(time.q4))); N.q4[1]=0.05*K.q4
+for (i in time.q4 [2:length(time.q4)]) {
+  n.q4 = N.q4[i-1]
+  N.q4[i] = n.q4+(r.q4*n.q4)*(1-n.q4/K.q4)
+}
+data4 = N.q4 + rnorm(N.q4, mean = 0, sd = 0.5)
+
+return_parameters4 <- function(x, y_pred, sigma){
+  -sum(dnorm(x=x, mean = y_pred, sd = sigma, log=TRUE))
 }
 
-optim(par = c(0, 1, 2), fn = calc_nll, data = data)
+
+obj_func4 <- function(par){
+  r <- par[1]
+  N <- par[2]
+  K <- par[3]
+  sigma <- par[4]
+  y_pred <-  (N + (r*N)*((1-N)/K))
+  nll <- return_parameters4(N, y_pred, sigma)
+}
+
+
+# Estimate parameters using optim()
+optfit <- optim(par=c(0.2, 5, 100, 0.5), fn=obj_func4)
+waoptcoefs <- optfit$par
+
+          
